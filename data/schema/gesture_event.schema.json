@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faceaccess.local/schema/gesture_event.schema.json",
+  "title": "FaceAccess AI gesture event v1",
+  "description": "Mot ban ghi cho moi khung hinh hoac su kien cu chi duoc EventLogger ghi ra. Khong chua anh, video hay dac trung sinh trac co the dung de dinh danh khuon mat.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "session_id",
+    "participant_code",
+    "elapsed_ms",
+    "face_detected",
+    "gesture_type",
+    "action_mapped",
+    "action_result",
+    "data_source"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "event_id": { "type": "string", "description": "UUID duy nhat cho ban ghi nay" },
+    "session_id": { "type": "string", "description": "Ma phien su dung, khong chua thong tin dinh danh" },
+    "participant_code": { "type": "string", "description": "Ma nguoi tham gia an danh, vi du P001. Khong phai ten that" },
+    "device_model": { "type": "string" },
+    "app_version": { "type": "string" },
+    "elapsed_ms": { "type": "number", "minimum": 0, "description": "Thoi gian tinh tu luc phien bat dau, khong phai epoch tuyet doi" },
+    "face_detected": { "type": "boolean" },
+    "ear_left": { "type": ["number", "null"], "minimum": 0 },
+    "ear_right": { "type": ["number", "null"], "minimum": 0 },
+    "mar": { "type": ["number", "null"], "minimum": 0 },
+    "yaw_deg": { "type": ["number", "null"], "description": "Goc yaw suy tu facial transformation matrix cua MediaPipe Face Landmarker, KHONG cung dinh nghia voi truong yaw minh hoa trong schema SafeDrive" },
+    "pitch_deg": { "type": ["number", "null"] },
+    "roll_deg": { "type": ["number", "null"] },
+    "gesture_type": {
+      "enum": ["none", "head_turn_left", "head_turn_right", "eye_close_hold", "eye_close_long", "face_lost"]
+    },
+    "gesture_confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "scan_index": { "type": ["integer", "null"], "minimum": 0, "description": "Vi tri dang highlight trong danh sach quet tai thoi diem su kien" },
+    "action_mapped": {
+      "enum": ["none", "move_previous", "move_next", "back", "home", "media_play_pause", "open_app", "emergency_stop"]
+    },
+    "action_target": { "type": ["string", "null"], "description": "Vi du package name khi action_mapped la open_app" },
+    "action_result": {
+      "enum": ["executed", "blocked_no_accessibility_service", "blocked_cooldown", "blocked_low_confidence", "ignored"]
+    },
+    "latency_ms": { "type": ["number", "null"], "minimum": 0, "description": "Tu luc frame duoc chup toi luc action duoc dispatch" },
+    "fps": { "type": ["number", "null"], "minimum": 0 },
+    "data_source": { "enum": ["device_live"] }
+  },
+  "additionalProperties": false
+}

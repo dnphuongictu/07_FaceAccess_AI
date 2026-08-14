@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faceaccess.local/schema/calibration_profile.schema.json",
+  "title": "FaceAccess AI calibration profile v1",
+  "description": "Nguong hieu chinh rieng cho mot nguoi dung/thiet bi, sinh ra tu man hinh hieu chinh trong app. Luu cuc bo, khong dong bo len server.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "participant_code",
+    "calibrated_at",
+    "device_model",
+    "ear_open_baseline",
+    "ear_closed_threshold",
+    "yaw_left_threshold_deg",
+    "yaw_right_threshold_deg",
+    "hold_duration_ms",
+    "cooldown_ms",
+    "emergency_hold_duration_ms"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "participant_code": { "type": "string" },
+    "calibrated_at": { "type": "string", "format": "date-time" },
+    "device_model": { "type": "string" },
+    "ear_open_baseline": { "type": "number", "exclusiveMinimum": 0, "description": "EAR trung binh khi mo mat binh thuong, do trong buoc hieu chinh" },
+    "ear_closed_threshold": { "type": "number", "exclusiveMinimum": 0, "description": "Nguong EAR duoi muc nay coi la nham mat" },
+    "yaw_left_threshold_deg": { "type": "number", "exclusiveMinimum": 0 },
+    "yaw_right_threshold_deg": { "type": "number", "exclusiveMinimum": 0 },
+    "hold_duration_ms": { "type": "integer", "exclusiveMinimum": 0, "description": "Thoi gian toi thieu phai giu cu chi lien tuc de tinh la co chu y" },
+    "cooldown_ms": { "type": "integer", "minimum": 0, "description": "Thoi gian khoa sau moi cu chi da kich hoat, chong lap lai ngoai y muon" },
+    "emergency_hold_duration_ms": { "type": "integer", "exclusiveMinimum": 0, "description": "Thoi gian nham mat lien tuc de kich hoat dung khan cap, phai lon hon hold_duration_ms" }
+  },
+  "additionalProperties": false
+}

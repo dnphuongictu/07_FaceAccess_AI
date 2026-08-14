@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faceaccess.local/schema/session_summary.schema.json",
+  "title": "FaceAccess AI session summary v1",
+  "description": "Ket qua tong hop mot phien danh gia, tinh tu chuoi gesture_event cua cung session_id. Dung de bao cao macro-F1, ty le hoan thanh lenh, kich hoat nham va latency theo tieu chi nghiem thu MVP trong docs/00_Y_TUONG_VA_PHAM_VI.md.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "participant_code",
+    "device_model",
+    "app_version",
+    "started_at",
+    "duration_s",
+    "commands_attempted",
+    "commands_completed",
+    "command_completion_rate",
+    "false_activation_count",
+    "false_activation_per_min",
+    "macro_f1",
+    "latency_p50_ms",
+    "latency_p95_ms",
+    "avg_fps",
+    "source_events_path",
+    "computed_by_script"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "session_id": { "type": "string" },
+    "participant_code": { "type": "string" },
+    "device_model": { "type": "string" },
+    "app_version": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "duration_s": { "type": "number", "exclusiveMinimum": 0 },
+    "commands_attempted": { "type": "integer", "minimum": 0 },
+    "commands_completed": { "type": "integer", "minimum": 0 },
+    "command_completion_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "false_activation_count": { "type": "integer", "minimum": 0, "description": "So lan action_result=executed nhung nguoi danh gia xac nhan la khong chu y" },
+    "false_activation_per_min": { "type": "number", "minimum": 0 },
+    "confusion_matrix": {
+      "type": "array",
+      "description": "Tuy chon: so dem theo cap (true_label, predicted_label) de tinh lai macro_f1 doc lap",
+      "items": {
+        "type": "object",
+        "required": ["true_label", "predicted_label", "count"],
+        "properties": {
+          "true_label": { "enum": ["head_turn_left", "head_turn_right", "eye_close_hold", "none"] },
+          "predicted_label": { "enum": ["head_turn_left", "head_turn_right", "eye_close_hold", "none"] },
+          "count": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "macro_f1": { "type": "number", "minimum": 0, "maximum": 1 },
+    "latency_p50_ms": { "type": "number", "minimum": 0 },
+    "latency_p95_ms": { "type": "number", "minimum": 0 },
+    "avg_fps": { "type": "number", "minimum": 0 },
+    "ram_mb_avg": { "type": ["number", "null"], "minimum": 0 },
+    "battery_delta_pct": { "type": ["number", "null"] },
+    "source_events_path": { "type": "string", "description": "Duong dan tuong doi toi file gesture_event JSON Lines dung de tinh cac chi so tren" },
+    "computed_by_script": { "type": "string", "description": "Duong dan script + phien ban ma da tinh ra ban ghi nay, phuc vu tai lap" },
+    "limitations": { "type": "string", "description": "Gioi han dien giai, vi du so nguoi tham gia nho, chua chia LOSO" }
+  },
+  "additionalProperties": false
+}

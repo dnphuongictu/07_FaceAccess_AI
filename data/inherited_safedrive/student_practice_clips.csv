@@ -1,0 +1,17 @@
+clip_id,user_code,lighting,glasses,duration_s,mean_ear,max_mar,max_abs_yaw,ground_truth,predicted_event,latency_ms,fps,data_source
+C001,U01,bright,no,12,0.31,0.25,3,normal,normal,120,26.0,synthetic
+C002,U02,low,no,12,0.29,0.27,4,normal,eye_closed,180,21.0,synthetic
+C003,U03,bright,yes,12,0.30,0.24,5,normal,normal,135,24.0,synthetic
+C004,U04,low,yes,12,0.27,0.28,6,normal,normal,205,19.0,synthetic
+C005,U01,bright,no,12,0.11,0.24,4,eye_closed,eye_closed,145,25.0,synthetic
+C006,U02,low,no,12,0.13,0.25,3,eye_closed,eye_closed,210,18.0,synthetic
+C007,U03,bright,yes,12,0.14,0.26,5,eye_closed,normal,165,22.0,synthetic
+C008,U04,low,yes,12,0.15,0.29,6,eye_closed,normal,230,17.0,synthetic
+C009,U01,bright,no,12,0.29,0.71,4,yawn,yawn,155,24.0,synthetic
+C010,U02,low,no,12,0.27,0.68,3,yawn,yawn,215,18.0,synthetic
+C011,U03,bright,yes,12,0.28,0.62,5,yawn,normal,175,21.0,synthetic
+C012,U04,low,yes,12,0.26,0.65,7,yawn,yawn,240,16.0,synthetic
+C013,U01,bright,no,12,0.30,0.26,29,head_turn,head_turn,150,25.0,synthetic
+C014,U02,low,no,12,0.28,0.27,31,head_turn,head_turn,220,18.0,synthetic
+C015,U03,bright,yes,12,0.29,0.25,25,head_turn,normal,170,22.0,synthetic
+C016,U04,low,yes,12,0.27,0.30,34,head_turn,head_turn,245,16.0,synthetic

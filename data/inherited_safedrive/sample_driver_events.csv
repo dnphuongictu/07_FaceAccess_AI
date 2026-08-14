@@ -1,0 +1,7 @@
+session_id,timestamp_ms,label,ear_left,ear_right,mar,yaw,pitch,roll,alert_type,confidence
+S001,0,normal,0.31,0.30,0.22,1.5,0.4,-0.2,none,0.91
+S001,500,normal,0.30,0.31,0.20,1.7,0.5,-0.1,none,0.92
+S001,1000,eye_closed,0.12,0.11,0.21,1.2,0.3,-0.1,eye_closed_warning,0.86
+S001,1500,eye_closed,0.10,0.09,0.20,1.0,0.2,-0.2,eye_closed_warning,0.90
+S001,2000,yawn,0.29,0.28,0.72,0.8,0.4,0.0,yawn_warning,0.84
+S001,2500,head_turn,0.30,0.29,0.24,28.0,1.5,0.5,head_turn_warning,0.81

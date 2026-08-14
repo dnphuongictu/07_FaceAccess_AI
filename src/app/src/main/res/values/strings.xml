@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FaceAccess AI</string>
+    <string name="accessibility_service_description">Cho phép FaceAccess AI thực hiện thao tác Back và Home khi bạn dùng cử chỉ khuôn mặt để điều khiển. Dịch vụ này không đọc nội dung màn hình của ứng dụng khác.</string>
+
+    <string name="notification_channel_name">FaceAccess AI đang chạy</string>
+    <string name="notification_channel_desc">Thông báo bắt buộc khi dịch vụ nhận diện cử chỉ khuôn mặt đang hoạt động nền.</string>
+    <string name="notification_title">FaceAccess AI đang theo dõi cử chỉ</string>
+    <string name="notification_text">Quay đầu để di chuyển, nhắm mắt giữ để chọn.</string>
+    <string name="notification_action_stop">Dừng</string>
+
+    <string name="onboarding_title">Thiết lập FaceAccess AI</string>
+    <string name="onboarding_camera_title">Quyền Camera</string>
+    <string name="onboarding_camera_desc">Cần camera trước để nhận diện cử chỉ khuôn mặt.</string>
+    <string name="onboarding_overlay_title">Hiển thị trên ứng dụng khác</string>
+    <string name="onboarding_overlay_desc">Cho phép bảng điều khiển nổi hiển thị khi bạn đang dùng ứng dụng khác.</string>
+    <string name="onboarding_accessibility_title">Dịch vụ trợ năng</string>
+    <string name="onboarding_accessibility_desc">Bật FaceAccess AI trong Cài đặt trợ năng để thực hiện Back/Home.</string>
+    <string name="onboarding_calibration_title">Hiệu chỉnh</string>
+    <string name="onboarding_calibration_desc">Đo ngưỡng mắt/đầu riêng cho bạn để nhận diện chính xác hơn.</string>
+    <string name="onboarding_grant_button">Cấp quyền</string>
+    <string name="onboarding_open_settings_button">Mở cài đặt</string>
+    <string name="onboarding_granted">Đã cấp</string>
+    <string name="onboarding_calibrate_button">Bắt đầu hiệu chỉnh</string>
+    <string name="onboarding_start_button">Bắt đầu FaceAccess</string>
+
+    <string name="calibration_step_look_straight">Nhìn thẳng vào camera và giữ yên</string>
+    <string name="calibration_step_turn_left">Quay đầu sang trái và giữ</string>
+    <string name="calibration_step_turn_right">Quay đầu sang phải và giữ</string>
+    <string name="calibration_step_close_eyes">Nhắm mắt và giữ</string>
+    <string name="calibration_done">Hoàn tất hiệu chỉnh</string>
+    <string name="calibration_retry">Làm lại</string>
+    <string name="calibration_next">Tiếp tục</string>
+
+    <string name="pinned_apps_title">Ứng dụng ghim sẵn</string>
+    <string name="pinned_apps_add">Thêm ứng dụng</string>
+    <string name="pinned_apps_empty">Chưa có ứng dụng nào được ghim</string>
+    <string name="pinned_apps_done">Xong</string>
+
+    <string name="action_emergency_stop">DỪNG</string>
+    <string name="status_face_ok">Đang theo dõi khuôn mặt</string>
+    <string name="status_face_lost">Không thấy khuôn mặt</string>
+</resources>

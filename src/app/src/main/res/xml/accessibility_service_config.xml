@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+FaceAccessAccessibilityService chi dung de phat performGlobalAction (BACK/HOME).
+KHONG doc noi dung man hinh cua app khac trong pham vi MVP nay, nen
+canRetrieveWindowContent=false va accessibilityEventTypes toi thieu.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canRetrieveWindowContent="false"
+    android:canPerformGestures="false"
+    android:notificationTimeout="200"
+    android:description="@string/accessibility_service_description" />
