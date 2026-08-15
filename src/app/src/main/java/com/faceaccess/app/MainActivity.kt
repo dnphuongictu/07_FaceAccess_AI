@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
     private var cameraGranted by mutableStateOf(false)
     private var overlayGranted by mutableStateOf(false)
     private var accessibilityGranted by mutableStateOf(false)
+    private var calibrationCompleted by mutableStateOf(false)
 
     private val requestCameraPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -49,6 +50,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         refreshPermissionState()
+        lifecycleScope.launch {
+            CalibrationStore(this@MainActivity).isCalibratedFlow.collect { completed ->
+                calibrationCompleted = completed
+            }
+        }
 
         setContent {
             FaceAccessTheme {
@@ -58,6 +64,7 @@ class MainActivity : ComponentActivity() {
                             cameraGranted = cameraGranted,
                             overlayGranted = overlayGranted,
                             accessibilityGranted = accessibilityGranted,
+                            calibrationCompleted = calibrationCompleted,
                             onRequestCamera = { requestCameraPermission.launch(Manifest.permission.CAMERA) },
                             onRequestOverlay = { overlaySettingsLauncher.launch(overlaySettingsIntent()) },
                             onRequestAccessibility = {
@@ -66,8 +73,10 @@ class MainActivity : ComponentActivity() {
                             onCalibrateClick = { screen = AppScreen.CALIBRATION },
                             onPinnedAppsClick = { screen = AppScreen.PINNED_APPS },
                             onStartClick = {
-                                FaceAccessOverlayService.start(this@MainActivity)
-                                finish()
+                                if (calibrationCompleted) {
+                                    FaceAccessOverlayService.start(this@MainActivity)
+                                    finish()
+                                }
                             },
                         )
 

@@ -14,6 +14,10 @@ data class FaceMetrics(
     val yawDeg: Float,
     val pitchDeg: Float,
     val rollDeg: Float,
+    /** Moc monotonic luc frame duoc gui vao MediaPipe; chi dung de tinh latency, khong ghi log truc tiep. */
+    val frameTimestampUptimeMs: Long? = null,
+    /** Toc do callback MediaPipe tren cua so gan nhat, khong phai FPS preview. */
+    val fps: Float? = null,
 ) {
     companion object {
         fun noFace(elapsedMs: Long) = FaceMetrics(

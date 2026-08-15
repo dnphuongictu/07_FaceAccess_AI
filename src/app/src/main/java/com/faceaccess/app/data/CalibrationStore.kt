@@ -2,6 +2,7 @@ package com.faceaccess.app.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -15,6 +16,10 @@ private val Context.calibrationDataStore: androidx.datastore.core.DataStore<Pref
 
 /** Luu ho so hieu chinh cuc bo tren thiet bi (khong dong bo len server). */
 class CalibrationStore(private val context: Context) {
+
+    val isCalibratedFlow: Flow<Boolean> = context.calibrationDataStore.data.map { prefs ->
+        prefs[KEY_CALIBRATION_COMPLETED] == true
+    }
 
     val profileFlow: Flow<CalibrationProfile> = context.calibrationDataStore.data.map { prefs ->
         CalibrationProfile(
@@ -37,6 +42,9 @@ class CalibrationStore(private val context: Context) {
             prefs[KEY_HOLD_DURATION_MS] = profile.holdDurationMs
             prefs[KEY_COOLDOWN_MS] = profile.cooldownMs
             prefs[KEY_EMERGENCY_HOLD_MS] = profile.emergencyHoldDurationMs
+            // Ghi cuoi cung trong cung mot transaction: profile chi duoc coi
+            // la hop le sau khi toan bo nguong da duoc luu thanh cong.
+            prefs[KEY_CALIBRATION_COMPLETED] = true
         }
     }
 
@@ -48,5 +56,6 @@ class CalibrationStore(private val context: Context) {
         val KEY_HOLD_DURATION_MS = longPreferencesKey("hold_duration_ms")
         val KEY_COOLDOWN_MS = longPreferencesKey("cooldown_ms")
         val KEY_EMERGENCY_HOLD_MS = longPreferencesKey("emergency_hold_duration_ms")
+        val KEY_CALIBRATION_COMPLETED = booleanPreferencesKey("calibration_completed")
     }
 }

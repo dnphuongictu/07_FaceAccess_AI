@@ -33,6 +33,9 @@ class FaceLandmarkerHelper(
 
     private var faceLandmarker: FaceLandmarker? = null
     private var sessionStartUptimeMs: Long = SystemClock.uptimeMillis()
+    private var fpsWindowStartMs: Long = sessionStartUptimeMs
+    private var fpsWindowFrames = 0
+    private var latestFps: Float? = null
 
     fun setup() {
         try {
@@ -51,6 +54,9 @@ class FaceLandmarkerHelper(
                 .build()
             faceLandmarker = FaceLandmarker.createFromOptions(context, options)
             sessionStartUptimeMs = SystemClock.uptimeMillis()
+            fpsWindowStartMs = sessionStartUptimeMs
+            fpsWindowFrames = 0
+            latestFps = null
         } catch (e: Exception) {
             listener.onError("Khong khoi tao duoc Face Landmarker: ${e.message}")
             Log.e(TAG, "setup() that bai", e)
@@ -87,16 +93,35 @@ class FaceLandmarkerHelper(
     }
 
     private fun onResult(result: FaceLandmarkerResult, input: MPImage) {
+        val callbackUptimeMs = SystemClock.uptimeMillis()
         val elapsedMs = result.timestampMs() - sessionStartUptimeMs
+        val fps = updateFps(callbackUptimeMs)
         val faces = result.faceLandmarks()
         if (faces.isEmpty()) {
-            listener.onFaceMetrics(FaceMetrics.noFace(elapsedMs))
+            listener.onFaceMetrics(
+                FaceMetrics.noFace(elapsedMs).copy(
+                    frameTimestampUptimeMs = result.timestampMs(),
+                    fps = fps,
+                ),
+            )
             return
         }
         val landmarks = faces[0].map { Landmark(it.x(), it.y(), it.z()) }
         val matrixColumnMajor = result.facialTransformationMatrixes().orElse(null)?.firstOrNull()
         val metrics = FaceMetricsExtractor.extract(landmarks, matrixColumnMajor, elapsedMs)
+            .copy(frameTimestampUptimeMs = result.timestampMs(), fps = fps)
         listener.onFaceMetrics(metrics)
+    }
+
+    private fun updateFps(nowMs: Long): Float? {
+        fpsWindowFrames += 1
+        val durationMs = nowMs - fpsWindowStartMs
+        if (durationMs >= FPS_WINDOW_MS) {
+            latestFps = fpsWindowFrames * 1_000f / durationMs.toFloat()
+            fpsWindowStartMs = nowMs
+            fpsWindowFrames = 0
+        }
+        return latestFps
     }
 
     private fun onMediapipeError(error: RuntimeException) {
@@ -106,5 +131,6 @@ class FaceLandmarkerHelper(
     companion object {
         private const val TAG = "FaceLandmarkerHelper"
         private const val MODEL_ASSET_PATH = "face_landmarker.task"
+        private const val FPS_WINDOW_MS = 1_000L
     }
 }

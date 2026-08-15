@@ -23,13 +23,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.faceaccess.app.R
 import com.faceaccess.app.camera.CameraSourceManager
 import com.faceaccess.app.camera.FaceLandmarkerHelper
+import com.faceaccess.app.feedback.AudioFeedback
 import com.faceaccess.app.gesture.CalibrationProfile
 import com.faceaccess.app.metrics.FaceMetrics
 import kotlinx.coroutines.delay
@@ -51,6 +52,15 @@ private class CalibrationAccumulator {
     var closedEarCount = 0
     var yawLeftMaxAbs = 0f
     var yawRightMaxAbs = 0f
+
+    fun reset() {
+        openEarSum = 0f
+        openEarCount = 0
+        closedEarSum = 0f
+        closedEarCount = 0
+        yawLeftMaxAbs = 0f
+        yawRightMaxAbs = 0f
+    }
 }
 
 @Composable
@@ -61,8 +71,10 @@ fun CalibrationScreen(onDone: (CalibrationProfile) -> Unit, onCancel: () -> Unit
     var step by remember { mutableStateOf(CalibrationStep.LOOK_STRAIGHT) }
     var faceDetected by remember { mutableStateOf(false) }
     var liveMetrics by remember { mutableStateOf<FaceMetrics?>(null) }
+    var calibrationError by remember { mutableStateOf(false) }
     val acc = remember { CalibrationAccumulator() }
     val previewView = remember { PreviewView(context) }
+    val audioFeedback = remember { AudioFeedback(context) }
 
     val faceLandmarkerHelper = remember {
         FaceLandmarkerHelper(
@@ -89,14 +101,22 @@ fun CalibrationScreen(onDone: (CalibrationProfile) -> Unit, onCancel: () -> Unit
         onDispose {
             cameraSourceManager.stop()
             faceLandmarkerHelper.close()
+            audioFeedback.close()
         }
     }
 
     LaunchedEffect(step) {
         if (step == CalibrationStep.DONE) {
-            onDone(buildProfile(acc))
+            val profile = buildProfileOrNull(acc)
+            if (profile == null) {
+                calibrationError = true
+                audioFeedback.announceInstruction(context.getString(R.string.calibration_invalid))
+            } else {
+                onDone(profile)
+            }
             return@LaunchedEffect
         }
+        audioFeedback.announceInstruction(context.getString(stepInstructionRes(step)))
         delay(STEP_DURATION_MS)
         step = nextStep(step)
     }
@@ -121,8 +141,32 @@ fun CalibrationScreen(onDone: (CalibrationProfile) -> Unit, onCancel: () -> Unit
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = liveMetricsText(liveMetrics), style = MaterialTheme.typography.labelLarge)
+        if (calibrationError) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.calibration_invalid),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
-        TextButton(onClick = onCancel) { Text(stringResource(R.string.calibration_retry)) }
+        TextButton(
+            onClick = {
+                if (calibrationError) {
+                    acc.reset()
+                    calibrationError = false
+                    step = CalibrationStep.LOOK_STRAIGHT
+                } else {
+                    onCancel()
+                }
+            },
+        ) {
+            Text(
+                stringResource(
+                    if (calibrationError) R.string.calibration_retry else R.string.calibration_cancel,
+                ),
+            )
+        }
     }
 }
 
@@ -139,6 +183,7 @@ private fun liveMetricsText(metrics: FaceMetrics?): String {
 
 private fun accumulate(step: CalibrationStep, metrics: FaceMetrics, acc: CalibrationAccumulator) {
     val earAvg = (metrics.earLeft + metrics.earRight) / 2f
+    if (!earAvg.isFinite() || !metrics.yawDeg.isFinite()) return
     when (step) {
         CalibrationStep.LOOK_STRAIGHT -> {
             acc.openEarSum += earAvg
@@ -158,9 +203,21 @@ private fun accumulate(step: CalibrationStep, metrics: FaceMetrics, acc: Calibra
     }
 }
 
-private fun buildProfile(acc: CalibrationAccumulator): CalibrationProfile {
-    val openBaseline = if (acc.openEarCount > 0) acc.openEarSum / acc.openEarCount else CalibrationProfile.DEFAULT.earOpenBaseline
-    val closedAvg = if (acc.closedEarCount > 0) acc.closedEarSum / acc.closedEarCount else CalibrationProfile.DEFAULT.earClosedThreshold
+private fun buildProfileOrNull(acc: CalibrationAccumulator): CalibrationProfile? {
+    if (acc.openEarCount < MIN_CALIBRATION_SAMPLES ||
+        acc.closedEarCount < MIN_CALIBRATION_SAMPLES ||
+        acc.yawLeftMaxAbs < MIN_CALIBRATION_YAW_DEG ||
+        acc.yawRightMaxAbs < MIN_CALIBRATION_YAW_DEG
+    ) {
+        return null
+    }
+    val openBaseline = acc.openEarSum / acc.openEarCount
+    val closedAvg = acc.closedEarSum / acc.closedEarCount
+    if (!openBaseline.isFinite() || !closedAvg.isFinite() ||
+        openBaseline - closedAvg < MIN_EAR_SEPARATION
+    ) {
+        return null
+    }
     // Nguong nam giua EAR mo va EAR nham do duoc, tranh chon sat mot trong hai cuc tri.
     val closedThreshold = ((openBaseline + closedAvg) / 2f).coerceIn(0.05f, (openBaseline - 0.02f).coerceAtLeast(0.06f))
     // Chi lay 60% goc quay toi da do duoc lam nguong, de cu chi kha thi nhung van tach biet voi rung lac dau nho.
@@ -177,6 +234,10 @@ private fun buildProfile(acc: CalibrationAccumulator): CalibrationProfile {
     )
 }
 
+private const val MIN_CALIBRATION_SAMPLES = 10
+private const val MIN_CALIBRATION_YAW_DEG = 12f
+private const val MIN_EAR_SEPARATION = 0.02f
+
 private fun nextStep(step: CalibrationStep): CalibrationStep = when (step) {
     CalibrationStep.LOOK_STRAIGHT -> CalibrationStep.CLOSE_EYES
     CalibrationStep.CLOSE_EYES -> CalibrationStep.TURN_LEFT
@@ -187,9 +248,13 @@ private fun nextStep(step: CalibrationStep): CalibrationStep = when (step) {
 
 @Composable
 private fun stepInstruction(step: CalibrationStep): String = when (step) {
-    CalibrationStep.LOOK_STRAIGHT -> stringResource(R.string.calibration_step_look_straight)
-    CalibrationStep.CLOSE_EYES -> stringResource(R.string.calibration_step_close_eyes)
-    CalibrationStep.TURN_LEFT -> stringResource(R.string.calibration_step_turn_left)
-    CalibrationStep.TURN_RIGHT -> stringResource(R.string.calibration_step_turn_right)
-    CalibrationStep.DONE -> stringResource(R.string.calibration_done)
+    else -> stringResource(stepInstructionRes(step))
+}
+
+private fun stepInstructionRes(step: CalibrationStep): Int = when (step) {
+    CalibrationStep.LOOK_STRAIGHT -> R.string.calibration_step_look_straight
+    CalibrationStep.CLOSE_EYES -> R.string.calibration_step_close_eyes
+    CalibrationStep.TURN_LEFT -> R.string.calibration_step_turn_left
+    CalibrationStep.TURN_RIGHT -> R.string.calibration_step_turn_right
+    CalibrationStep.DONE -> R.string.calibration_done
 }

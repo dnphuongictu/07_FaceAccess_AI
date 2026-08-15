@@ -10,6 +10,7 @@ import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
@@ -37,6 +38,7 @@ import com.faceaccess.app.camera.CameraSourceManager
 import com.faceaccess.app.camera.FaceLandmarkerHelper
 import com.faceaccess.app.data.CalibrationStore
 import com.faceaccess.app.data.PinnedAppsStore
+import com.faceaccess.app.feedback.AudioFeedback
 import com.faceaccess.app.gesture.GestureEvent
 import com.faceaccess.app.gesture.GestureStateMachine
 import com.faceaccess.app.gesture.GestureType
@@ -44,6 +46,7 @@ import com.faceaccess.app.logging.EventLogger
 import com.faceaccess.app.logging.GestureEventRecord
 import com.faceaccess.app.metrics.FaceMetrics
 import com.faceaccess.app.ui.theme.FaceAccessTheme
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -75,6 +78,7 @@ class FaceAccessOverlayService :
     private lateinit var gestureStateMachine: GestureStateMachine
     private lateinit var actionDispatcher: ActionDispatcher
     private lateinit var eventLogger: EventLogger
+    private lateinit var audioFeedback: AudioFeedback
     private val scanController = ScanController()
 
     private val sessionId = UUID.randomUUID().toString()
@@ -91,6 +95,7 @@ class FaceAccessOverlayService :
         startForegroundWithNotification()
 
         eventLogger = EventLogger(this, sessionId)
+        audioFeedback = AudioFeedback(this)
         gestureStateMachine = GestureStateMachine()
         actionDispatcher = ActionDispatcher(this, onEmergencyStop = { stopSelfService() })
         faceLandmarkerHelper = FaceLandmarkerHelper(this, faceLandmarkerListener)
@@ -98,11 +103,19 @@ class FaceAccessOverlayService :
 
         addOverlayView()
 
-        faceLandmarkerHelper.setup()
-        cameraSourceManager.start(this)
-
         lifecycleScope.launch {
-            CalibrationStore(this@FaceAccessOverlayService).profileFlow.collect { profile ->
+            val calibrationStore = CalibrationStore(this@FaceAccessOverlayService)
+            if (!calibrationStore.isCalibratedFlow.first()) {
+                Log.e(TAG, "Tu choi khoi dong: chua co profile hieu chinh hop le")
+                stopSelfService()
+                return@launch
+            }
+            val initialProfile = calibrationStore.profileFlow.first()
+            gestureStateMachine.updateProfile(initialProfile)
+            faceLandmarkerHelper.setup()
+            cameraSourceManager.start(this@FaceAccessOverlayService)
+
+            calibrationStore.profileFlow.drop(1).collect { profile ->
                 gestureStateMachine.updateProfile(profile)
             }
         }
@@ -112,6 +125,7 @@ class FaceAccessOverlayService :
                 listOf(ScanAction.Back, ScanAction.Home, ScanAction.MediaPlayPause, ScanAction.EmergencyStop)
             scanController.setActions(actions)
             refreshOverlayIndex()
+            audioFeedback.announceReady(scanController.current?.label)
         }
     }
 
@@ -132,6 +146,7 @@ class FaceAccessOverlayService :
         cameraSourceManager.stop()
         faceLandmarkerHelper.close()
         eventLogger.close()
+        audioFeedback.close()
         overlayView?.let { runCatching { windowManager.removeView(it) } }
         overlayView = null
         viewModelStore.clear()
@@ -176,6 +191,7 @@ class FaceAccessOverlayService :
     }
 
     private fun handleEmergencyStopButton() {
+        audioFeedback.announceEmergencyStop()
         val result = actionDispatcher.dispatch(ScanAction.EmergencyStop)
         Log.i(TAG, "Dung khan cap qua nut cham: $result")
     }
@@ -213,11 +229,13 @@ class FaceAccessOverlayService :
             GestureType.HEAD_TURN_LEFT -> {
                 scanController.movePrevious()
                 refreshOverlayIndex()
+                audioFeedback.announceSelection(scanController.current?.label)
                 logEvent(event, actionMapped = "move_previous", actionTarget = null, result = ActionResult.EXECUTED)
             }
             GestureType.HEAD_TURN_RIGHT -> {
                 scanController.moveNext()
                 refreshOverlayIndex()
+                audioFeedback.announceSelection(scanController.current?.label)
                 logEvent(event, actionMapped = "move_next", actionTarget = null, result = ActionResult.EXECUTED)
             }
             GestureType.EYE_CLOSE_HOLD -> {
@@ -225,16 +243,20 @@ class FaceAccessOverlayService :
                 if (action == null) {
                     logEvent(event, actionMapped = "none", actionTarget = null, result = ActionResult.IGNORED)
                 } else {
+                    if (action == ScanAction.EmergencyStop) audioFeedback.announceEmergencyStop()
                     val result = actionDispatcher.dispatch(action)
+                    if (action != ScanAction.EmergencyStop) audioFeedback.announceAction(action.label, result)
                     val target = (action as? ScanAction.OpenApp)?.packageName
                     logEvent(event, actionMapped = action.actionMappedValue, actionTarget = target, result = result)
                 }
             }
             GestureType.EYE_CLOSE_LONG -> {
+                audioFeedback.announceEmergencyStop()
                 val result = actionDispatcher.dispatch(ScanAction.EmergencyStop)
                 logEvent(event, actionMapped = "emergency_stop", actionTarget = null, result = result)
             }
             GestureType.FACE_LOST -> {
+                audioFeedback.announceFaceLost()
                 logEvent(event, actionMapped = "none", actionTarget = null, result = ActionResult.IGNORED)
             }
             GestureType.NONE -> Unit
@@ -261,8 +283,10 @@ class FaceAccessOverlayService :
             actionMapped = actionMapped,
             actionTarget = actionTarget,
             actionResult = result,
-            latencyMs = null,
-            fps = null,
+            latencyMs = event.metrics.frameTimestampUptimeMs?.let { frameTime ->
+                (SystemClock.uptimeMillis() - frameTime).coerceAtLeast(0L)
+            },
+            fps = event.metrics.fps,
         )
         eventLogger.log(record)
     }

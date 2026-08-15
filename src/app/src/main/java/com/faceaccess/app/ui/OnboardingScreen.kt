@@ -27,6 +27,7 @@ fun OnboardingScreen(
     cameraGranted: Boolean,
     overlayGranted: Boolean,
     accessibilityGranted: Boolean,
+    calibrationCompleted: Boolean,
     onRequestCamera: () -> Unit,
     onRequestOverlay: () -> Unit,
     onRequestAccessibility: () -> Unit,
@@ -34,7 +35,7 @@ fun OnboardingScreen(
     onPinnedAppsClick: () -> Unit,
     onStartClick: () -> Unit,
 ) {
-    val allGranted = cameraGranted && overlayGranted && accessibilityGranted
+    val readyToStart = cameraGranted && overlayGranted && accessibilityGranted && calibrationCompleted
 
     Column(
         modifier = Modifier
@@ -69,8 +70,22 @@ fun OnboardingScreen(
                 Text(stringResource(R.string.onboarding_calibration_title), style = MaterialTheme.typography.titleLarge)
                 Text(stringResource(R.string.onboarding_calibration_desc), style = MaterialTheme.typography.bodyLarge)
                 Button(onClick = onCalibrateClick, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.onboarding_calibrate_button))
+                    Text(
+                        if (calibrationCompleted) {
+                            stringResource(R.string.onboarding_recalibrate_button)
+                        } else {
+                            stringResource(R.string.onboarding_calibrate_button)
+                        },
+                    )
                 }
+                Text(
+                    text = if (calibrationCompleted) {
+                        stringResource(R.string.onboarding_calibration_ready)
+                    } else {
+                        stringResource(R.string.onboarding_calibration_required)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
 
@@ -85,7 +100,7 @@ fun OnboardingScreen(
 
         Button(
             onClick = onStartClick,
-            enabled = allGranted,
+            enabled = readyToStart,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.onboarding_start_button))

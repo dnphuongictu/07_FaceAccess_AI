@@ -22,14 +22,19 @@
     <string name="onboarding_open_settings_button">Mở cài đặt</string>
     <string name="onboarding_granted">Đã cấp</string>
     <string name="onboarding_calibrate_button">Bắt đầu hiệu chỉnh</string>
+    <string name="onboarding_recalibrate_button">Hiệu chỉnh lại</string>
+    <string name="onboarding_calibration_ready">Đã hiệu chỉnh — có thể bắt đầu.</string>
+    <string name="onboarding_calibration_required">Bắt buộc hiệu chỉnh trước khi bắt đầu.</string>
     <string name="onboarding_start_button">Bắt đầu FaceAccess</string>
 
-    <string name="calibration_step_look_straight">Nhìn thẳng vào camera và giữ yên</string>
-    <string name="calibration_step_turn_left">Quay đầu sang trái và giữ</string>
-    <string name="calibration_step_turn_right">Quay đầu sang phải và giữ</string>
-    <string name="calibration_step_close_eyes">Nhắm mắt và giữ</string>
+    <string name="calibration_step_look_straight">Hãy nhìn thẳng vào camera và giữ yên cho đến khi nghe hướng dẫn tiếp theo</string>
+    <string name="calibration_step_turn_left">Hãy mở mắt, quay đầu sang trái và giữ cho đến khi nghe hướng dẫn tiếp theo</string>
+    <string name="calibration_step_turn_right">Hãy quay đầu sang phải và giữ cho đến khi nghe hướng dẫn tiếp theo</string>
+    <string name="calibration_step_close_eyes">Hãy nhắm mắt và giữ cho đến khi nghe hướng dẫn tiếp theo</string>
     <string name="calibration_done">Hoàn tất hiệu chỉnh</string>
     <string name="calibration_retry">Làm lại</string>
+    <string name="calibration_cancel">Hủy</string>
+    <string name="calibration_invalid">Hiệu chỉnh chưa đạt: hãy giữ mặt trong khung, nhắm mắt rõ và quay đủ sang cả hai phía.</string>
     <string name="calibration_next">Tiếp tục</string>
 
     <string name="pinned_apps_title">Ứng dụng ghim sẵn</string>

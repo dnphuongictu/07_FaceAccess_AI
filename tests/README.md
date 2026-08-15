@@ -9,8 +9,8 @@ Unit test thật nằm theo đúng quy ước Gradle/Android, bên trong module 
   MediaPipe sang row-major nội bộ).
 - `../src/app/src/test/java/com/faceaccess/app/gesture/GestureStateMachineTest.kt`
   — cổng chống kích hoạt nhầm: chớp mắt tự nhiên không kích hoạt, giữ đủ lâu
-  mới kích hoạt, không lặp lại khi giữ liên tục, dừng khẩn cấp khi giữ quá
-  ngưỡng, mất khuôn mặt huỷ cử chỉ dở dang.
+  và mở mắt lại mới chọn, dừng khẩn cấp không phát Select trước, gate roll,
+  phục hồi trung tính sau khi mất mặt và không lặp lại khi giữ liên tục.
 - `../src/app/src/test/java/com/faceaccess/app/action/ScanControllerTest.kt`
   — thứ tự quét (quay vòng hai chiều) và ánh xạ ScanAction sang giá trị
   `action_mapped` của `../data/schema/gesture_event.schema.json`.

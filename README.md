@@ -7,8 +7,16 @@ chỉ có chủ ý thành thao tác chọn, quay lại, Home hoặc điều khi�
 
 ## Trạng thái
 
-**Giai đoạn:** khởi tạo và kiểm chứng bằng chứng nền. Chưa có MVP và chưa có kết
-quả thực nghiệm riêng của FaceAccess AI.
+**Giai đoạn:** đã có MVP kỹ thuật chạy trên thiết bị Android, nhưng chưa có kết
+quả đánh giá định lượng hay thử nghiệm với người dùng mục tiêu. Không được coi
+việc build/chạy thử nội bộ là bằng chứng về hiệu quả trợ năng.
+
+Trước khi thu dữ liệu, app đã có chốt hiệu chỉnh bắt buộc, gate yaw/roll, phục
+hồi an toàn sau khi mất khuôn mặt, Emergency Stop không phát Select trước, và
+ghi latency/FPS cho sự kiện cử chỉ. Phản hồi trợ năng gồm rung xác nhận và TTS
+tiếng Việt đọc hướng dẫn hiệu chỉnh, mục đang chọn, kết quả hành động và cảnh
+báo mất khuôn mặt. Protocol pilot nằm tại
+`docs/03_PROTOCOL_PILOT_TRUOC_THU_DU_LIEU.md`.
 
 Kết quả SafeDrive trong workspace chỉ là bằng chứng kế thừa để hình thành giả
 thuyết. Không được tuyên bố FaceAccess đạt macro-F1 96,84% cho tới khi tìm được
@@ -37,4 +45,3 @@ artifact gốc, tái lập phép tính và đánh giá lại đúng bài toán c
   khi chưa có đánh giá phù hợp với người dùng mục tiêu.
 - Mỗi chỉ số công bố phải trỏ được tới dữ liệu đầu vào, script tính và phiên bản mã.
 - Mọi thao tác nhạy cảm phải có xác nhận và cơ chế dừng nhanh.
-
